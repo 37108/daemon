@@ -1,0 +1,10 @@
+GET http://localhost:3000/tasks
+
+###
+POST http://localhost:3000/tasks
+
+{
+  "name": "sample task",
+  "description": "sample task description",
+  "categories": ["work"]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "tsx watch --experimental-sqlite ./server/index.ts"
+  },
+  "dependencies": {
+    "ulidx": "^2.4.1",
+    "valibot": "^0.41.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@types/node": "^22.5.4",
+    "tsx": "^4.19.0"
+  },
+  "volta": {
+    "node": "22.8.0",
+    "npm": "10.8.3"
+  }
+}
