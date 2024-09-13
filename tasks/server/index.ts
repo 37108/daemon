@@ -54,6 +54,28 @@ const server = createServer((request, response) => {
         response.end(JSON.stringify(result));
       });
     }
+
+    if (method === "PUT") {
+      let body = "";
+      request.on("data", (chunk) => {
+        body = body + chunk.toString();
+      });
+
+      request.on("end", () => {
+        const data = JSON.parse(body);
+        const taskService = new TaskService(new InMemoryTaskRepository());
+
+        const { result, error } = taskService.update(data);
+
+        if (error) {
+          response.writeHead(400, { "Content-Type": "application/json" });
+          response.end(JSON.stringify({ error: error.message }));
+          return;
+        }
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify(result));
+      });
+    }
   }
   if (/^\/tasks\/(\d+)$/.test(path)) {
     if (method === "GET") {

@@ -14,3 +14,13 @@ POST http://localhost:3000/tasks
   "description": "sample task description",
   "categories": ["work"]
 }
+
+###
+PUT http://localhost:3000/tasks
+
+{
+  "id": "1",
+  "name": "updated task",
+  "description": "sample task description",
+  "categories": ["work"]
+}

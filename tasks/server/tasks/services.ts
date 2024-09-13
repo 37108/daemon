@@ -37,4 +37,22 @@ export class TaskService {
       return { result: null, error: error };
     }
   }
+
+  update(data: unknown): { result: null | unknown; error: null | Error } {
+    let value: v.InferInput<typeof Task.schema>;
+
+    try {
+      value = v.parse(Task.schema, data);
+    } catch (error) {
+      return { result: null, error: error };
+    }
+
+    try {
+      const task = new Task(value.id, value.name);
+      this.repository.update(task);
+      return { result: task, error: null };
+    } catch (error) {
+      return { result: null, error: error };
+    }
+  }
 }

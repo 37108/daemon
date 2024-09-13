@@ -4,6 +4,7 @@ import { Task } from "./models";
 
 export interface TaskRepository {
   save(task: Task);
+  update(task: Task);
   delete(id: string);
   findById(id: string): Task | null;
   findAll(): Task[];
@@ -15,6 +16,11 @@ export class InMemoryTaskRepository implements TaskRepository {
   save(task: Task) {
     const insert = database.prepare("INSERT INTO tasks(id, name) VALUES (?, ?)");
     insert.run(task.id, task.name);
+  }
+
+  update(task: Task) {
+    const insert = database.prepare(`UPDATE tasks SET name = '${task.name}' WHERE id = ${task.id}`);
+    insert.run();
   }
 
   delete(id: string) {
