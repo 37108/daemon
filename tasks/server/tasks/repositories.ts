@@ -2,7 +2,7 @@ import * as v from "valibot";
 import { database } from "../";
 import { Task } from "./models";
 
-interface TaskRepository {
+export interface TaskRepository {
   save(task: Task);
   delete(id: string);
   findById(id: string): Task | null;

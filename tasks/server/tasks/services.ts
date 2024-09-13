@@ -1,9 +1,9 @@
 import * as v from "valibot";
 import { Task } from "./models";
-import type { InMemoryTaskRepository } from "./repositories";
+import type { TaskRepository } from "./repositories";
 
 export class TaskService {
-  constructor(private repository: InMemoryTaskRepository) {}
+  constructor(private repository: TaskRepository) {}
 
   one(id: string): { result: null | unknown; error: null | Error } {
     const result = this.repository.findById(id);
