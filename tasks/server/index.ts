@@ -3,7 +3,7 @@ import { DatabaseSync } from "node:sqlite";
 import { TaskService } from "./tasks/services";
 
 const PORT = 3000;
-const database = new DatabaseSync(":memory:");
+export const database = new DatabaseSync(":memory:");
 
 database.exec("CREATE TABLE IF NOT EXISTS tasks (id TEXT, name TEXT)");
 
