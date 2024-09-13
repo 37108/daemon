@@ -1,5 +1,6 @@
 import { createServer } from "http";
 import { DatabaseSync } from "node:sqlite";
+import { InMemoryTaskRepository } from "./tasks/repositories";
 import { TaskService } from "./tasks/services";
 
 const PORT = 3000;
@@ -20,7 +21,8 @@ const server = createServer((request, response) => {
 
   if (path === "/tasks") {
     if (method === "GET") {
-      const { result, error } = TaskService.all(database);
+      const taskService = new TaskService(new InMemoryTaskRepository());
+      const { result, error } = taskService.all();
       if (error) {
         response.writeHead(400, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ error: error.message }));
@@ -39,7 +41,9 @@ const server = createServer((request, response) => {
 
       request.on("end", () => {
         const data = JSON.parse(body);
-        const { result, error } = TaskService.create(database, data);
+        const taskService = new TaskService(new InMemoryTaskRepository());
+
+        const { result, error } = taskService.create(data);
 
         if (error) {
           response.writeHead(400, { "Content-Type": "application/json" });
@@ -54,7 +58,9 @@ const server = createServer((request, response) => {
   if (/^\/tasks\/(\d+)$/.test(path)) {
     if (method === "GET") {
       const id = path.split("/")[2];
-      const { result, error } = TaskService.one(database, id);
+
+      const taskService = new TaskService(new InMemoryTaskRepository());
+      const { result, error } = taskService.one(id);
       if (error) {
         response.writeHead(400, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ error: error.message }));
@@ -74,7 +80,8 @@ const server = createServer((request, response) => {
     if (method === "DELETE") {
       const id = path.split("/")[2];
 
-      const { error } = TaskService.delete(database, id);
+      const taskService = new TaskService(new InMemoryTaskRepository());
+      const { error } = taskService.delete(id);
       if (error) {
         response.writeHead(400, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ error: error.message }));
