@@ -1,5 +1,6 @@
 import { createServer } from "http";
 import { DatabaseSync } from "node:sqlite";
+import { ulid } from "ulidx";
 import { InMemoryTaskRepository } from "./tasks/repositories";
 import { TaskService } from "./tasks/services";
 
@@ -9,8 +10,8 @@ export const database = new DatabaseSync(":memory:");
 database.exec("CREATE TABLE IF NOT EXISTS tasks (id TEXT, name TEXT)");
 
 const insert = database.prepare("INSERT INTO tasks(id, name) VALUES (?, ?)");
-insert.run("1", "sample 1");
-insert.run("2", "sample 2");
+insert.run(ulid(), "sample 1");
+insert.run(ulid(), "sample 2");
 
 const server = createServer((request, response) => {
   if (!request.url || !request.method) {

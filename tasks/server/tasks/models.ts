@@ -9,17 +9,17 @@ export class Task {
     public categories?: string[],
     public priority?: "HIGH" | "MEDIUM" | "LOW",
     public due?: Date,
-    // public children?: Task[],
+    private children?: string[],
   ) {}
 
   static schema = v.object({
-    id: v.string(),
-    name: v.string(),
-    description: v.optional(v.string()),
+    id: v.pipe(v.string(), v.ulid()),
+    name: v.pipe(v.string(), v.length(100)),
+    description: v.optional(v.pipe(v.string(), v.length(256))),
     categories: v.optional(v.array(v.string())),
     priority: v.optional(v.union([v.literal("HIGH"), v.literal("MEDIUM"), v.literal("LOW")])),
     due: v.optional(v.date()),
-    // children: v.array(v.string()),
+    children: v.optional(v.array(v.pipe(v.string(), v.ulid()))),
   });
 
   static of({
@@ -30,11 +30,10 @@ export class Task {
     due,
   }: Omit<v.InferOutput<typeof this.schema>, "id">) {
     const id = ulid();
-    return new Task(id, name, description, categories, priority, due);
-  }
+    const task = new Task(id, name, description, categories, priority, due);
 
-  isOverdue(): boolean {
-    return this.due ? this.due < new Date() : false;
+    // todo: children のチェックと追加を行う
+    return task;
   }
 
   // todo: IDの重複や、子タスクであるものが入らないようにする
