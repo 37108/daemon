@@ -19,7 +19,9 @@ export class InMemoryTaskRepository implements TaskRepository {
   }
 
   update(task: Task) {
-    const insert = database.prepare(`UPDATE tasks SET name = '${task.name}' WHERE id = ${task.id}`);
+    const insert = database.prepare(
+      `UPDATE tasks SET name = '${task.name}' WHERE id = '${task.id}'`,
+    );
     insert.run();
   }
 

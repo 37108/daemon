@@ -1,10 +1,10 @@
 GET http://localhost:3000/tasks
 
 ###
-GET http://localhost:3000/tasks/1
+GET http://localhost:3000/tasks/01J7YS9140DCXHB8AC9TCHJAN8
 
 ###
-DELETE http://localhost:3000/tasks/1
+DELETE http://localhost:3000/tasks/01J7YS9140DCXHB8AC9TCHJAN8
 
 ###
 POST http://localhost:3000/tasks
@@ -16,10 +16,9 @@ POST http://localhost:3000/tasks
 }
 
 ###
-PUT http://localhost:3000/tasks
+PUT http://localhost:3000/tasks/01J7YS9140DCXHB8AC9TCHJAN8
 
 {
-  "id": "1",
   "name": "updated task",
   "description": "sample task description",
   "categories": ["work"]

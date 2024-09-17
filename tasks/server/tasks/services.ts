@@ -1,58 +1,59 @@
 import * as v from "valibot";
+import type { Result } from "../models";
 import { Task } from "./models";
 import type { TaskRepository } from "./repositories";
 
 export class TaskService {
   constructor(private repository: TaskRepository) {}
 
-  findById(id: string): { result: null | unknown; error: null | Error } {
+  findById(id: string): Result<Task | null, Error> {
     const result = this.repository.findById(id);
-    return { result, error: null };
+    return { success: true, value: result };
   }
 
-  findAll(): { result: null | unknown; error: null | Error } {
+  findAll(): Result<Task[], Error> {
     const result = this.repository.findAll();
-    return { result: result, error: null };
+    return { success: true, value: result };
   }
 
-  delete(id: string): { result: null | unknown; error: null | Error } {
-    this.repository.delete(id);
-    return { result: null, error: null };
-  }
-
-  create(data: unknown): { result: null | unknown; error: null | Error } {
+  create(data: unknown): Result<Task, Error> {
     let value: Parameters<typeof Task.of>[0];
 
     try {
       value = v.parse(v.omit(Task.schema, ["id"]), data);
     } catch (error) {
-      return { result: null, error: error };
+      return { success: false, error };
     }
 
     try {
       const task = Task.of(value);
       this.repository.save(task);
-      return { result: task, error: null };
+      return { success: true, value: task };
     } catch (error) {
-      return { result: null, error: error };
+      return { success: false, error };
     }
   }
 
-  update(data: unknown): { result: null | unknown; error: null | Error } {
+  update(data: unknown): Result<null, Error> {
     let value: v.InferInput<typeof Task.schema>;
 
     try {
       value = v.parse(Task.schema, data);
     } catch (error) {
-      return { result: null, error: error };
+      return { success: false, error };
     }
 
     try {
       const task = new Task(value.id, value.name);
       this.repository.update(task);
-      return { result: task, error: null };
+      return { success: true, value: null };
     } catch (error) {
-      return { result: null, error: error };
+      return { success: false, error };
     }
+  }
+
+  delete(id: string): Result<null, Error> {
+    this.repository.delete(id);
+    return { success: true, value: null };
   }
 }

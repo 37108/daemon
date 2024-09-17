@@ -19,19 +19,20 @@ const server = createServer((request, response) => {
   }
   const path = request.url;
   const method = request.method;
+  const taskService = new TaskService(new InMemoryTaskRepository());
 
   if (path === "/tasks") {
     if (method === "GET") {
-      const taskService = new TaskService(new InMemoryTaskRepository());
-      const { result, error } = taskService.findAll();
-      if (error) {
+      const result = taskService.findAll();
+
+      if (!result.success) {
         response.writeHead(400, { "Content-Type": "application/json" });
-        response.end(JSON.stringify({ error: error.message }));
+        response.end(JSON.stringify({ error: result.error.message }));
         return;
       }
 
       response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify({ tasks: result }));
+      response.end(JSON.stringify({ tasks: result.value }));
       return;
     }
     if (method === "POST") {
@@ -42,47 +43,21 @@ const server = createServer((request, response) => {
 
       request.on("end", () => {
         const data = JSON.parse(body);
-        const taskService = new TaskService(new InMemoryTaskRepository());
+        const result = taskService.create(data);
 
-        const { result, error } = taskService.create(data);
-
-        if (error) {
+        if (!result.success) {
           response.writeHead(400, { "Content-Type": "application/json" });
-          response.end(JSON.stringify({ error: error.message }));
+          response.end(JSON.stringify({ error: result.error.message }));
           return;
         }
         response.writeHead(200, { "Content-Type": "application/json" });
-        response.end(JSON.stringify(result));
-      });
-    }
-
-    if (method === "PUT") {
-      let body = "";
-      request.on("data", (chunk) => {
-        body = body + chunk.toString();
-      });
-
-      request.on("end", () => {
-        const data = JSON.parse(body);
-        const taskService = new TaskService(new InMemoryTaskRepository());
-
-        const { result, error } = taskService.update(data);
-
-        if (error) {
-          response.writeHead(400, { "Content-Type": "application/json" });
-          response.end(JSON.stringify({ error: error.message }));
-          return;
-        }
-        response.writeHead(200, { "Content-Type": "application/json" });
-        response.end(JSON.stringify(result));
+        response.end(JSON.stringify(result.value));
       });
     }
   }
   if (/^\/tasks\/([\w!?/+\-_~=;.,*&@#$%()'[\]]+)$/.test(path)) {
     if (method === "GET") {
       const id = path.split("/")[2];
-
-      const taskService = new TaskService(new InMemoryTaskRepository());
       const result = taskService.findById(id);
 
       if (!result.success) {
@@ -101,14 +76,35 @@ const server = createServer((request, response) => {
       return;
     }
 
+    if (method === "PUT") {
+      let body = "";
+      request.on("data", (chunk) => {
+        body = body + chunk.toString();
+      });
+
+      request.on("end", () => {
+        const data = JSON.parse(body);
+        const id = path.split("/")[2];
+
+        const result = taskService.update({ ...data, id });
+
+        if (!result.success) {
+          response.writeHead(400, { "Content-Type": "application/json" });
+          response.end(JSON.stringify({ error: result.error.message }));
+          return;
+        }
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify(result.value));
+      });
+    }
+
     if (method === "DELETE") {
       const id = path.split("/")[2];
+      const result = taskService.delete(id);
 
-      const taskService = new TaskService(new InMemoryTaskRepository());
-      const { error } = taskService.delete(id);
-      if (error) {
+      if (!result.success) {
         response.writeHead(400, { "Content-Type": "application/json" });
-        response.end(JSON.stringify({ error: error.message }));
+        response.end(JSON.stringify({ error: result.error.message }));
         return;
       }
 
