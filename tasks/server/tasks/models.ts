@@ -15,8 +15,8 @@ export class Task {
   static schema = v.object({
     id: v.pipe(v.string(), v.ulid()),
     name: v.pipe(v.string(), v.maxLength(100)),
-    description: v.optional(v.pipe(v.string(), v.maxLength(256))),
-    categories: v.optional(v.array(v.string())),
+    description: v.optional(v.pipe(v.string(), v.maxLength(256)), ""),
+    categories: v.optional(v.array(v.string()), []),
     priority: v.optional(v.union([v.literal("HIGH"), v.literal("MEDIUM"), v.literal("LOW")])),
     due: v.optional(v.date()),
     children: v.optional(v.array(v.pipe(v.string(), v.ulid()))),

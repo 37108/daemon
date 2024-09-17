@@ -7,11 +7,11 @@ import { TaskService } from "./tasks/services";
 const PORT = 3000;
 export const database = new DatabaseSync(":memory:");
 
-database.exec("CREATE TABLE IF NOT EXISTS tasks (id TEXT, name TEXT)");
+database.exec("CREATE TABLE IF NOT EXISTS tasks (id TEXT UNIQUE, name TEXT, description TEXT)");
 
-const insert = database.prepare("INSERT INTO tasks(id, name) VALUES (?, ?)");
-insert.run(ulid(), "sample 1");
-insert.run(ulid(), "sample 2");
+const insert = database.prepare("INSERT INTO tasks(id, name, description) VALUES (?, ?, ?)");
+insert.run(ulid(), "sample 1", "sample description");
+insert.run(ulid(), "sample 2", "sample description");
 
 const server = createServer((request, response) => {
   if (!request.url || !request.method) {

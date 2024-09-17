@@ -14,13 +14,13 @@ export class InMemoryTaskRepository implements TaskRepository {
   database = database;
 
   save(task: Task) {
-    const insert = database.prepare("INSERT INTO tasks(id, name) VALUES (?, ?)");
-    insert.run(task.id, task.name);
+    const insert = database.prepare("INSERT INTO tasks(id, name, description) VALUES (?, ?, ?)");
+    insert.run(task.id, task.name, task.description ?? "");
   }
 
   update(task: Task) {
     const insert = database.prepare(
-      `UPDATE tasks SET name = '${task.name}' WHERE id = '${task.id}'`,
+      `UPDATE tasks SET name = '${task.name}', description = '${task.description}' WHERE id = '${task.id}'`,
     );
     insert.run();
   }
