@@ -78,25 +78,26 @@ const server = createServer((request, response) => {
       });
     }
   }
-  if (/^\/tasks\/(\d+)$/.test(path)) {
+  if (/^\/tasks\/([\w!?/+\-_~=;.,*&@#$%()'[\]]+)$/.test(path)) {
     if (method === "GET") {
       const id = path.split("/")[2];
 
       const taskService = new TaskService(new InMemoryTaskRepository());
-      const { result, error } = taskService.findById(id);
-      if (error) {
+      const result = taskService.findById(id);
+
+      if (!result.success) {
         response.writeHead(400, { "Content-Type": "application/json" });
-        response.end(JSON.stringify({ error: error.message }));
+        response.end(JSON.stringify({ error: result.error.message }));
         return;
       }
-      if (!result) {
+      if (result.success && result.value == null) {
         response.writeHead(404, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ error: "task not found" }));
         return;
       }
 
       response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify(result));
+      response.end(JSON.stringify(result.value));
       return;
     }
 
