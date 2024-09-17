@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "dev": "tsx watch --experimental-sqlite ./server/index.ts"
+    "dev": "tsx watch --experimental-sqlite ./server/index.ts",
+    "lint": "biome check --write --unsafe ./",
+    "test": "vitest run"
   },
   "dependencies": {
     "ulidx": "^2.4.1",
@@ -12,7 +14,8 @@
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
     "@types/node": "^22.5.4",
-    "tsx": "^4.19.0"
+    "tsx": "^4.19.0",
+    "vitest": "^2.1.1"
   },
   "volta": {
     "node": "22.8.0",
