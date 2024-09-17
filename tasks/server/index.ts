@@ -23,7 +23,7 @@ const server = createServer((request, response) => {
   if (path === "/tasks") {
     if (method === "GET") {
       const taskService = new TaskService(new InMemoryTaskRepository());
-      const { result, error } = taskService.all();
+      const { result, error } = taskService.findAll();
       if (error) {
         response.writeHead(400, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ error: error.message }));
@@ -83,7 +83,7 @@ const server = createServer((request, response) => {
       const id = path.split("/")[2];
 
       const taskService = new TaskService(new InMemoryTaskRepository());
-      const { result, error } = taskService.one(id);
+      const { result, error } = taskService.findById(id);
       if (error) {
         response.writeHead(400, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ error: error.message }));

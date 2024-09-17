@@ -5,12 +5,12 @@ import type { TaskRepository } from "./repositories";
 export class TaskService {
   constructor(private repository: TaskRepository) {}
 
-  one(id: string): { result: null | unknown; error: null | Error } {
+  findById(id: string): { result: null | unknown; error: null | Error } {
     const result = this.repository.findById(id);
     return { result, error: null };
   }
 
-  all(): { result: null | unknown; error: null | Error } {
+  findAll(): { result: null | unknown; error: null | Error } {
     const result = this.repository.findAll();
     return { result: result, error: null };
   }
