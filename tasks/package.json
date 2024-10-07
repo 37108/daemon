@@ -5,9 +5,16 @@
   "scripts": {
     "dev": "tsx watch --experimental-sqlite ./server/index.ts",
     "lint": "biome check --write --unsafe ./",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:pull": "prisma db pull",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^5.20.0",
+    "@prisma/client": "^5.20.0",
+    "pg": "^8.13.0",
+    "prisma": "^5.20.0",
     "ulidx": "^2.4.1",
     "valibot": "^0.41.0"
   },
