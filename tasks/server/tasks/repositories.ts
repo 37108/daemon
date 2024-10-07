@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import * as v from "valibot";
-import { type CreateTaskSchema, Task, TaskSchema, type UpdateTaskSchema } from "./models";
+import { type CreateTaskSchema, TaskSchema, type UpdateTaskSchema } from "./models";
 
 export interface TaskRepository {
   save(task: CreateTaskSchema): Promise<TaskSchema | null>;
@@ -53,7 +53,7 @@ export class PostgresTaskRepository implements TaskRepository {
       },
     });
     try {
-      return v.parse(Task.schema, result);
+      return v.parse(TaskSchema, result);
     } catch (error) {
       console.error(error);
       return null;
