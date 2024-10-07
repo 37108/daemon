@@ -7,7 +7,7 @@ export const TaskSchema = v.object({
   categories: v.optional(v.array(v.string()), []),
   priority: v.optional(v.union([v.literal("HIGH"), v.literal("MEDIUM"), v.literal("LOW")])),
   due: v.optional(v.nullable(v.date())),
-  children: v.optional(v.array(v.pipe(v.string(), v.ulid()))),
+  children: v.optional(v.array(v.pipe(v.string(), v.uuid()))),
 });
 export type TaskSchema = v.InferInput<typeof TaskSchema>;
 
