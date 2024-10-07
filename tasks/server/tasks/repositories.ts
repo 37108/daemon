@@ -1,55 +1,71 @@
+import { PrismaClient } from "@prisma/client";
 import * as v from "valibot";
-import { database } from "../";
-import { Task } from "./models";
+import { type CreateTaskSchema, Task, TaskSchema, type UpdateTaskSchema } from "./models";
 
 export interface TaskRepository {
-  save(task: Task);
-  update(task: Task);
+  save(task: CreateTaskSchema): Promise<TaskSchema | null>;
+  update(task: TaskSchema);
   delete(id: string);
-  findById(id: string): Task | null;
-  findAll(): Task[];
+  findById(id: string): Promise<TaskSchema | null>;
+  findAll(): Promise<TaskSchema[]>;
 }
 
-export class InMemoryTaskRepository implements TaskRepository {
-  database = database;
+export class PostgresTaskRepository implements TaskRepository {
+  prisma = new PrismaClient();
 
-  save(task: Task) {
-    const insert = database.prepare("INSERT INTO tasks(id, name, description) VALUES (?, ?, ?)");
-    insert.run(task.id, task.name, task.description ?? "");
-  }
+  async save(task: CreateTaskSchema) {
+    const result = await this.prisma.task.create({
+      data: { name: task.name, description: task.description },
+    });
 
-  update(task: Task) {
-    const insert = database.prepare(
-      `UPDATE tasks SET name = '${task.name}', description = '${task.description}' WHERE id = '${task.id}'`,
-    );
-    insert.run();
-  }
-
-  delete(id: string) {
-    const insert = database.prepare("DELETE FROM tasks WHERE id = ?");
-    insert.run(id);
-    return { result: null, error: null };
-  }
-
-  findById(id: string): Task | null {
-    const query = database.prepare("SELECT * FROM tasks WHERE id = ?");
-    const result = query.get(id);
     try {
-      const value = v.parse(Task.schema, result);
-      return new Task(value.id, value.name, value.description);
-    } catch (_) {
+      return v.parse(TaskSchema, result);
+    } catch (error) {
+      console.error(error);
       return null;
     }
   }
 
-  findAll(): Task[] {
-    try {
-      const query = database.prepare("SELECT * FROM tasks");
-      const result = query.all();
-      const tasks = result.map((item) => v.parse(Task.schema, item));
+  async update(task: UpdateTaskSchema) {
+    await this.prisma.task.update({
+      where: {
+        id: task.id,
+      },
+      data: {
+        name: task.name,
+        description: task.description,
+      },
+    });
+  }
 
-      return tasks.map((task) => new Task(task.id, task.name, task.description));
-    } catch (_) {
+  async delete(id: string) {
+    await this.prisma.task.delete({
+      where: {
+        id,
+      },
+    });
+  }
+
+  async findById(id: string) {
+    const result = await this.prisma.task.findUnique({
+      where: {
+        id,
+      },
+    });
+    try {
+      return v.parse(Task.schema, result);
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  async findAll() {
+    const result = await this.prisma.task.findMany();
+    try {
+      return result.map((item) => v.parse(TaskSchema, item));
+    } catch (error) {
+      console.error(error);
       return [];
     }
   }

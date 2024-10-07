@@ -1,7 +1,7 @@
 GET http://localhost:3000/tasks
 
 ###
-GET http://localhost:3000/tasks/01J7YS9140DCXHB8AC9TCHJAN8
+GET http://localhost:3000/tasks/3982d5a8-e556-4f64-b1fe-c6d8814f1866
 
 ###
 DELETE http://localhost:3000/tasks/01J7YS9140DCXHB8AC9TCHJAN8
@@ -16,7 +16,7 @@ POST http://localhost:3000/tasks
 }
 
 ###
-PUT http://localhost:3000/tasks/01J7YS9140DCXHB8AC9TCHJAN8
+PUT http://localhost:3000/tasks/3982d5a8-e556-4f64-b1fe-c6d8814f1866
 
 {
   "name": "updated task",

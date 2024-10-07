@@ -1,29 +1,20 @@
 import { createServer } from "http";
-import { DatabaseSync } from "node:sqlite";
-import { ulid } from "ulidx";
-import { InMemoryTaskRepository } from "./tasks/repositories";
+import { PostgresTaskRepository } from "./tasks/repositories";
 import { TaskService } from "./tasks/services";
 
 const PORT = 3000;
-export const database = new DatabaseSync(":memory:");
 
-database.exec("CREATE TABLE IF NOT EXISTS tasks (id TEXT UNIQUE, name TEXT, description TEXT)");
-
-const insert = database.prepare("INSERT INTO tasks(id, name, description) VALUES (?, ?, ?)");
-insert.run(ulid(), "sample 1", "sample description");
-insert.run(ulid(), "sample 2", "sample description");
-
-const server = createServer((request, response) => {
+const server = createServer(async (request, response) => {
   if (!request.url || !request.method) {
     throw new Error("path or method is not defined");
   }
   const path = request.url;
   const method = request.method;
-  const taskService = new TaskService(new InMemoryTaskRepository());
+  const taskService = new TaskService(new PostgresTaskRepository());
 
   if (path === "/tasks") {
     if (method === "GET") {
-      const result = taskService.findAll();
+      const result = await taskService.findAll();
 
       if (!result.success) {
         response.writeHead(400, { "Content-Type": "application/json" });
@@ -41,9 +32,9 @@ const server = createServer((request, response) => {
         body = body + chunk.toString();
       });
 
-      request.on("end", () => {
+      request.on("end", async () => {
         const data = JSON.parse(body);
-        const result = taskService.create(data);
+        const result = await taskService.create(data);
 
         if (!result.success) {
           response.writeHead(400, { "Content-Type": "application/json" });
@@ -58,7 +49,7 @@ const server = createServer((request, response) => {
   if (/^\/tasks\/([\w!?/+\-_~=;.,*&@#$%()'[\]]+)$/.test(path)) {
     if (method === "GET") {
       const id = path.split("/")[2];
-      const result = taskService.findById(id);
+      const result = await taskService.findById(id);
 
       if (!result.success) {
         response.writeHead(400, { "Content-Type": "application/json" });
@@ -82,11 +73,11 @@ const server = createServer((request, response) => {
         body = body + chunk.toString();
       });
 
-      request.on("end", () => {
+      request.on("end", async () => {
         const data = JSON.parse(body);
         const id = path.split("/")[2];
 
-        const result = taskService.update({ ...data, id });
+        const result = await taskService.update({ ...data, id });
 
         if (!result.success) {
           response.writeHead(400, { "Content-Type": "application/json" });
@@ -100,7 +91,7 @@ const server = createServer((request, response) => {
 
     if (method === "DELETE") {
       const id = path.split("/")[2];
-      const result = taskService.delete(id);
+      const result = await taskService.delete(id);
 
       if (!result.success) {
         response.writeHead(400, { "Content-Type": "application/json" });

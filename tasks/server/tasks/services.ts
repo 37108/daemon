@@ -1,59 +1,61 @@
 import * as v from "valibot";
 import type { Result } from "../models";
-import { Task } from "./models";
+import { CreateTaskSchema, TaskSchema } from "./models";
 import type { TaskRepository } from "./repositories";
 
 export class TaskService {
   constructor(private repository: TaskRepository) {}
 
-  findById(id: string): Result<Task | null, Error> {
-    const result = this.repository.findById(id);
+  async findById(id: string): Promise<Result<TaskSchema | null, Error>> {
+    const result = await this.repository.findById(id);
     return { success: true, value: result };
   }
 
-  findAll(): Result<Task[], Error> {
-    const result = this.repository.findAll();
+  async findAll(): Promise<Result<TaskSchema[], Error>> {
+    const result = await this.repository.findAll();
     return { success: true, value: result };
   }
 
-  create(data: unknown): Result<Task, Error> {
-    let value: Parameters<typeof Task.of>[0];
+  async create(data: unknown): Promise<Result<TaskSchema, Error>> {
+    let value: CreateTaskSchema;
 
     try {
-      value = v.parse(v.omit(Task.schema, ["id"]), data);
+      value = v.parse(CreateTaskSchema, data);
     } catch (error) {
       return { success: false, error };
     }
 
     try {
-      const task = Task.of(value);
-      this.repository.save(task);
-      return { success: true, value: task };
+      const res = await this.repository.save(value);
+      if (!res) {
+        throw new Error("task not found");
+      }
+      return { success: true, value: res };
     } catch (error) {
+      console.error(error);
       return { success: false, error };
     }
   }
 
-  update(data: unknown): Result<null, Error> {
-    let value: v.InferInput<typeof Task.schema>;
+  async update(data: unknown): Promise<Result<null, Error>> {
+    let value: TaskSchema;
 
     try {
-      value = v.parse(Task.schema, data);
+      value = v.parse(TaskSchema, data);
     } catch (error) {
       return { success: false, error };
     }
 
     try {
-      const task = new Task(value.id, value.name);
-      this.repository.update(task);
+      await this.repository.update(value);
       return { success: true, value: null };
     } catch (error) {
       return { success: false, error };
     }
   }
 
-  delete(id: string): Result<null, Error> {
-    this.repository.delete(id);
+  async delete(id: string): Promise<Result<null, Error>> {
+    await this.repository.delete(id);
     return { success: true, value: null };
   }
 }
