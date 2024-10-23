@@ -1,4 +1,5 @@
 import { createServer } from "http";
+import { PostgresCategoryRepository } from "./repositories/categories";
 import { PostgresTaskRepository } from "./repositories/tasks";
 import { TaskService } from "./services";
 
@@ -10,7 +11,10 @@ const server = createServer(async (request, response) => {
   }
   const path = request.url;
   const method = request.method;
-  const taskService = new TaskService(new PostgresTaskRepository());
+  const taskService = new TaskService(
+    new PostgresTaskRepository(),
+    new PostgresCategoryRepository(),
+  );
 
   if (path === "/tasks") {
     if (method === "GET") {

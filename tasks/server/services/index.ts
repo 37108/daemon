@@ -1,18 +1,22 @@
 import * as v from "valibot";
 import { CreateTaskSchema, TaskSchema } from "../domains/tasks";
+import type { CategoryRepository } from "../repositories/categories";
 import type { TaskRepository } from "../repositories/tasks";
 import type { Result } from "../types";
 
 export class TaskService {
-  constructor(private repository: TaskRepository) {}
+  constructor(
+    private taskRepository: TaskRepository,
+    private categoryRepository: CategoryRepository,
+  ) {}
 
   async findById(id: string): Promise<Result<TaskSchema | null, Error>> {
-    const result = await this.repository.findById(id);
+    const result = await this.taskRepository.findById(id);
     return { success: true, value: result };
   }
 
   async findAll(): Promise<Result<TaskSchema[], Error>> {
-    const result = await this.repository.findAll();
+    const result = await this.taskRepository.findAll();
     return { success: true, value: result };
   }
 
@@ -26,11 +30,22 @@ export class TaskService {
     }
 
     try {
-      const res = await this.repository.save(value);
+      const res = await this.taskRepository.save(value);
       if (!res) {
         throw new Error("task did not created");
       }
-      return { success: true, value: res };
+      if (value.categories) {
+        const promises = value.categories.map((category) =>
+          this.categoryRepository.save({ taskId: res.id, name: category }),
+        );
+        await Promise.all(promises);
+      }
+      const task = await this.findById(res.id);
+      if (!task.success || !task.value) {
+        throw new Error("task not found");
+      }
+
+      return { success: true, value: task.value };
     } catch (error) {
       console.error(error);
       return { success: false, error };
@@ -47,7 +62,7 @@ export class TaskService {
     }
 
     try {
-      await this.repository.update(value);
+      await this.taskRepository.update(value);
       return { success: true, value: null };
     } catch (error) {
       return { success: false, error };
@@ -55,7 +70,7 @@ export class TaskService {
   }
 
   async delete(id: string): Promise<Result<null, Error>> {
-    await this.repository.delete(id);
+    await this.taskRepository.delete(id);
     return { success: true, value: null };
   }
 }
