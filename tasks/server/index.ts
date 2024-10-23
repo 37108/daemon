@@ -1,112 +1,101 @@
-import { createServer } from "http";
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
 import { PostgresCategoryRepository } from "./repositories/categories";
 import { PostgresTaskRepository } from "./repositories/tasks";
 import { TaskService } from "./services";
 
 const PORT = 3000;
 
-const server = createServer(async (request, response) => {
-  if (!request.url || !request.method) {
-    throw new Error("path or method is not defined");
-  }
-  const path = request.url;
-  const method = request.method;
+const app = new Hono();
+app.get("/tasks", async (context) => {
   const taskService = new TaskService(
     new PostgresTaskRepository(),
     new PostgresCategoryRepository(),
   );
 
-  if (path === "/tasks") {
-    if (method === "GET") {
-      const result = await taskService.findAll();
-
-      if (!result.success) {
-        response.writeHead(400, { "Content-Type": "application/json" });
-        response.end(JSON.stringify({ error: result.error.message }));
-        return;
-      }
-
-      response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify({ tasks: result.value }));
-      return;
-    }
-    if (method === "POST") {
-      let body = "";
-      request.on("data", (chunk) => {
-        body = body + chunk.toString();
-      });
-
-      request.on("end", async () => {
-        const data = JSON.parse(body);
-        const result = await taskService.create(data);
-
-        if (!result.success) {
-          response.writeHead(400, { "Content-Type": "application/json" });
-          response.end(JSON.stringify({ error: result.error.message }));
-          return;
-        }
-        response.writeHead(200, { "Content-Type": "application/json" });
-        response.end(JSON.stringify(result.value));
-      });
-    }
+  const result = await taskService.findAll();
+  if (!result.success) {
+    context.status(400);
+    return context.json({ error: result.error.message });
   }
-  if (/^\/tasks\/([\w!?/+\-_~=;.,*&@#$%()'[\]]+)$/.test(path)) {
-    if (method === "GET") {
-      const id = path.split("/")[2];
-      const result = await taskService.findById(id);
 
-      if (!result.success) {
-        response.writeHead(400, { "Content-Type": "application/json" });
-        response.end(JSON.stringify({ error: result.error.message }));
-        return;
-      }
-      if (result.success && result.value == null) {
-        response.writeHead(404, { "Content-Type": "application/json" });
-        response.end(JSON.stringify({ error: "task not found" }));
-        return;
-      }
-
-      response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify(result.value));
-      return;
-    }
-
-    if (method === "PUT") {
-      let body = "";
-      request.on("data", (chunk) => {
-        body = body + chunk.toString();
-      });
-
-      request.on("end", async () => {
-        const data = JSON.parse(body);
-        const id = path.split("/")[2];
-
-        const result = await taskService.update({ ...data, id });
-
-        if (!result.success) {
-          response.writeHead(400, { "Content-Type": "application/json" });
-          response.end(JSON.stringify({ error: result.error.message }));
-          return;
-        }
-        response.writeHead(200, { "Content-Type": "application/json" });
-        response.end(JSON.stringify(result.value));
-      });
-    }
-
-    if (method === "DELETE") {
-      const id = path.split("/")[2];
-      const result = await taskService.delete(id);
-
-      if (!result.success) {
-        response.writeHead(400, { "Content-Type": "application/json" });
-        response.end(JSON.stringify({ error: result.error.message }));
-        return;
-      }
-
-      response.writeHead(204, { "Content-Type": "application/json" });
-      return;
-    }
-  }
+  context.status(200);
+  return context.json({ tasks: result.value ?? [] });
 });
 
-server.listen(PORT);
+app.post("/tasks", async (context) => {
+  const taskService = new TaskService(
+    new PostgresTaskRepository(),
+    new PostgresCategoryRepository(),
+  );
+
+  const result = await taskService.create(await context.req.json());
+
+  if (!result.success) {
+    context.status(400);
+    return context.json({ error: result.error.message });
+  }
+  context.status(200);
+  return context.json(result.value);
+});
+
+app.get("/tasks/:id", async (context) => {
+  const taskService = new TaskService(
+    new PostgresTaskRepository(),
+    new PostgresCategoryRepository(),
+  );
+
+  const result = await taskService.findById(context.req.param("id"));
+  if (!result.success) {
+    context.status(400);
+    return context.json({ error: result.error.message });
+  }
+  if (result.value == null) {
+    context.status(404);
+    return context.json({ error: "task not found" });
+  }
+
+  context.status(200);
+  return context.json(result.value);
+});
+
+app.put("/tasks/:id", async (context) => {
+  const taskService = new TaskService(
+    new PostgresTaskRepository(),
+    new PostgresCategoryRepository(),
+  );
+
+  const result = await taskService.update({
+    ...(await context.req.json()),
+    id: context.req.param("id"),
+  });
+
+  if (!result.success) {
+    context.status(400);
+    return context.json({ error: result.error.message });
+  }
+  context.status(200);
+  return context.json(result.value);
+});
+
+app.delete("/tasks/:id", async (context) => {
+  const taskService = new TaskService(
+    new PostgresTaskRepository(),
+    new PostgresCategoryRepository(),
+  );
+
+  const result = await taskService.delete(context.req.param("id"));
+
+  if (!result.success) {
+    context.status(400);
+    return context.json({ error: result.error.message });
+  }
+
+  context.status(204);
+  return context.text("");
+});
+
+serve({
+  fetch: app.fetch,
+  port: PORT,
+});
