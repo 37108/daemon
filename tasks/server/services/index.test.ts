@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { CreateTaskSchema, TaskSchema } from "./models";
-import type { TaskRepository } from "./repositories";
-import { TaskService } from "./services";
+import type { CreateTaskSchema, TaskSchema } from "../domains/tasks";
+import type { TaskRepository } from "../repositories/tasks";
+import { TaskService } from "./";
 
 const id = "3982d5a8-e556-4f64-b1fe-c6d8814f1866";
 

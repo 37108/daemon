@@ -1,7 +1,7 @@
 import * as v from "valibot";
-import type { Result } from "../models";
-import { CreateTaskSchema, TaskSchema } from "./models";
-import type { TaskRepository } from "./repositories";
+import { CreateTaskSchema, TaskSchema } from "../domains/tasks";
+import type { TaskRepository } from "../repositories/tasks";
+import type { Result } from "../types";
 
 export class TaskService {
   constructor(private repository: TaskRepository) {}

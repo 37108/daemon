@@ -1,6 +1,6 @@
 import { createServer } from "http";
-import { PostgresTaskRepository } from "./tasks/repositories";
-import { TaskService } from "./tasks/services";
+import { PostgresTaskRepository } from "./repositories/tasks";
+import { TaskService } from "./services";
 
 const PORT = 3000;
 
