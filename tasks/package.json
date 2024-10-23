@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "dev": "tsx watch --experimental-sqlite ./server/index.ts",
+    "dev": "tsx watch ./server/index.ts",
     "lint": "biome check --write --unsafe ./",
     "test": "vitest run",
     "prisma:migrate": "prisma migrate dev --name init",
