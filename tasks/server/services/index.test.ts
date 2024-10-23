@@ -54,7 +54,8 @@ describe("Task Services", () => {
     const result = await service.findAll();
     expect(result.success).toBeTruthy();
     if (result.success) {
-      expect(result.value).toBeDefined();
+      expect(result.value.find((value) => value.id === TASK_ID_ONE)).toBeDefined();
+      expect(result.value.find((value) => value.id === TASK_ID_TWO)).toBeDefined();
     }
   });
 });
