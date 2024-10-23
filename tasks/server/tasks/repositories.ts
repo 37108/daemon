@@ -17,6 +17,17 @@ export class PostgresTaskRepository implements TaskRepository {
     const result = await this.prisma.task.create({
       data: { name: task.name, description: task.description },
     });
+    if (task.categories) {
+      const promises = task.categories.map((category) =>
+        this.prisma.category.create({
+          data: {
+            taskId: result.id,
+            name: category,
+          },
+        }),
+      );
+      await Promise.all(promises);
+    }
 
     try {
       return v.parse(TaskSchema, result);
@@ -36,6 +47,17 @@ export class PostgresTaskRepository implements TaskRepository {
         description: task.description,
       },
     });
+    if (task.categories) {
+      const promises = task.categories.map((category) =>
+        this.prisma.category.create({
+          data: {
+            taskId: task.id,
+            name: category,
+          },
+        }),
+      );
+      await Promise.all(promises);
+    }
   }
 
   async delete(id: string) {
@@ -51,9 +73,15 @@ export class PostgresTaskRepository implements TaskRepository {
       where: {
         id,
       },
+      include: {
+        categories: true,
+      },
     });
     try {
-      return v.parse(TaskSchema, result);
+      return v.parse(TaskSchema, {
+        ...result,
+        categories: result?.categories.map((category) => category.name),
+      });
     } catch (error) {
       console.error(error);
       return null;
@@ -61,9 +89,15 @@ export class PostgresTaskRepository implements TaskRepository {
   }
 
   async findAll() {
-    const result = await this.prisma.task.findMany();
+    const result = await this.prisma.task.findMany({
+      include: {
+        categories: true,
+      },
+    });
     try {
-      return result.map((item) => v.parse(TaskSchema, item));
+      return result.map((item) =>
+        v.parse(TaskSchema, { ...item, categories: item.categories.map((i) => i.name) }),
+      );
     } catch (error) {
       console.error(error);
       return [];

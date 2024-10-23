@@ -28,7 +28,7 @@ export class TaskService {
     try {
       const res = await this.repository.save(value);
       if (!res) {
-        throw new Error("task not found");
+        throw new Error("task did not created");
       }
       return { success: true, value: res };
     } catch (error) {
