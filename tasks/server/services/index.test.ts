@@ -1,13 +1,16 @@
+import { randomUUID } from "crypto";
 import { describe, expect, it } from "vitest";
 import type { CreateTaskSchema, TaskSchema } from "../domains/tasks";
+import type { CategoryRepository } from "../repositories/categories";
 import type { TaskRepository } from "../repositories/tasks";
 import { TaskService } from "./";
 
-const id = "3982d5a8-e556-4f64-b1fe-c6d8814f1866";
+const TASK_ID_ONE = randomUUID();
+const TASK_ID_TWO = randomUUID();
 
 class TestTaskRepository implements TaskRepository {
   async save(_: CreateTaskSchema) {
-    const task = { id: "3982d5a8-e556-4f64-b1fe-c6d8814f1866", name: "sample task" };
+    const task = { id: TASK_ID_ONE, name: "sample task" };
     return task;
   }
   async update(_: TaskSchema) {}
@@ -18,21 +21,32 @@ class TestTaskRepository implements TaskRepository {
   }
   async findAll() {
     const tasks = [
-      { id: "3982d5a8-e556-4f64-b1fe-c6d8814f1866", name: "sample task 1" },
-      { id: "c13898a8-8899-4ef8-a605-ee165c1555cd", name: "sample task 2" },
+      { id: TASK_ID_ONE, name: "sample task 1" },
+      { id: TASK_ID_TWO, name: "sample task 2" },
     ];
     return tasks;
   }
 }
 
+class TestCategoryRepository implements CategoryRepository {
+  async save(data: { taskId: string; name: string }) {
+    return {
+      id: randomUUID(),
+      taskId: data.taskId,
+      name: data.name,
+    };
+  }
+  async deleteByTaskId(_: string) {}
+}
+
 describe("Task Services", () => {
-  const service = new TaskService(new TestTaskRepository());
+  const service = new TaskService(new TestTaskRepository(), new TestCategoryRepository());
 
   it("should return a task", async () => {
-    const result = await service.findById(id);
+    const result = await service.findById(TASK_ID_ONE);
     expect(result.success).toBeTruthy();
     if (result.success) {
-      expect(result.value?.id).toBe(id);
+      expect(result.value?.id).toBe(TASK_ID_ONE);
     }
   });
 
