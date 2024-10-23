@@ -6,6 +6,8 @@ export interface CategoryRepository {
     taskId: string;
     name: string;
   } | null>;
+
+  deleteByTaskId(taskId: string): Promise<void>;
 }
 
 export class PostgresCategoryRepository implements CategoryRepository {
@@ -19,5 +21,10 @@ export class PostgresCategoryRepository implements CategoryRepository {
       },
     });
     return result;
+  }
+
+  async deleteByTaskId(taskId: string) {
+    await this.prisma.category.deleteMany({ where: { taskId } });
+    return;
   }
 }

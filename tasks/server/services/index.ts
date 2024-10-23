@@ -35,7 +35,7 @@ export class TaskService {
         throw new Error("task did not created");
       }
       if (value.categories) {
-        const promises = value.categories.map((category) =>
+        const promises = [...new Set(value.categories)].map((category) =>
           this.categoryRepository.save({ taskId: res.id, name: category }),
         );
         await Promise.all(promises);
@@ -62,7 +62,23 @@ export class TaskService {
     }
 
     try {
+      const res = await this.taskRepository.findById(value.id);
+      if (!res) {
+        throw new Error("task not found");
+      }
+
       await this.taskRepository.update(value);
+
+      const categories = res.categories ?? [];
+
+      if (value.categories) {
+        await this.categoryRepository.deleteByTaskId(value.id);
+
+        const promises = [...new Set([...value.categories, ...categories])].map((category) =>
+          this.categoryRepository.save({ taskId: res.id, name: category }),
+        );
+        await Promise.all(promises);
+      }
       return { success: true, value: null };
     } catch (error) {
       return { success: false, error };
@@ -70,6 +86,7 @@ export class TaskService {
   }
 
   async delete(id: string): Promise<Result<null, Error>> {
+    await this.categoryRepository.deleteByTaskId(id);
     await this.taskRepository.delete(id);
     return { success: true, value: null };
   }

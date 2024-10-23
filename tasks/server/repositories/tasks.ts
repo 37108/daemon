@@ -35,17 +35,6 @@ export class PostgresTaskRepository implements TaskRepository {
         description: task.description,
       },
     });
-    if (task.categories) {
-      const promises = task.categories.map((category) =>
-        this.prisma.category.create({
-          data: {
-            taskId: task.id,
-            name: category,
-          },
-        }),
-      );
-      await Promise.all(promises);
-    }
   }
 
   async delete(id: string) {
